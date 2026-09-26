@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+
+Sitemap: https://tanush-fitness-b2b.vercel.app/sitemap.xml
