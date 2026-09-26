@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: tanush-fitness-b2b-backend
+    runtime: node
+    rootDir: backend
+    plan: free
+    region: singapore
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/v1/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: SUPABASE_PROJECT_ID
+        value: "lpnfwludlkygysxtohkw"
+      - key: SUPABASE_URL
+        value: "https://lpnfwludlkygysxtohkw.supabase.co"
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: JWT_SECRET
+        value: "tanush-fitness-b2b-production-jwt-secret-key-32chars"
+      - key: ACCESS_TOKEN_SECRET
+        value: "tanush-fitness-access-token-secret-key-32chars"
+      - key: REFRESH_TOKEN_SECRET
+        value: "tanush-fitness-refresh-token-secret-key-32chars"
+      - key: COOKIE_SECRET
+        value: "tanush-fitness-cookie-secret-key-32chars"
+      - key: FRONTEND_URL
+        value: "https://tanush-fitness-b2b.vercel.app"

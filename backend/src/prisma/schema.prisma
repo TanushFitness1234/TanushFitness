@@ -1,0 +1,523 @@
+// Updated Prisma schema per new requirements
+// src/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// --------------------------------------------------------
+// ENUMS
+// --------------------------------------------------------
+
+enum UserRole {
+  ADMIN
+  GYM_OWNER
+  JOB_SEEKER
+}
+
+enum EnquiryStatus {
+  NEW
+  IN_REVIEW
+  QUOTATION_SENT
+  NEGOTIATING
+  APPROVED
+  REJECTED
+  CLOSED
+}
+
+enum ServiceStatus {
+  NEW
+  IN_REVIEW
+  COMPLETED
+  CANCELLED
+}
+
+enum ApplicationStatus {
+  PENDING_REVIEW
+  SHORTLISTED
+  CONTACTED
+  REJECTED
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+}
+
+enum NotificationType {
+  RFQ
+  JOB
+  SERVICE
+  CONTACT
+  SYSTEM
+}
+
+enum NotificationPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  DELETED
+}
+
+// --------------------------------------------------------
+// 1. USER & AUTHENTICATION MODELS
+// --------------------------------------------------------
+
+model User {
+  id               String      @id @default(uuid())
+  name             String?
+  email            String      @unique
+  mobile           String?     @unique
+  city             String?
+  password         String
+  role             UserRole    @default(GYM_OWNER)
+  status           UserStatus  @default(ACTIVE)
+  isVerified       Boolean     @default(false)
+  emailVerified    Boolean     @default(false)
+  mobileVerified   Boolean     @default(false)
+  isActive         Boolean     @default(true)
+  verificationToken String?
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  deletedAt        DateTime?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  gymOwnerProfile  GymOwner?
+  jobSeekerProfile JobSeeker?
+  notifications    Notification[]
+  refreshTokens    RefreshToken[]
+  auditLogs        AuditLog[]
+  uploadedMedia    Media[]
+
+  // Inverse relations for createdBy/updatedBy
+  usersCreated             User[]              @relation("UserCreatedBy")
+  usersUpdated             User[]              @relation("UserUpdatedBy")
+  categoriesCreated        EquipmentCategory[] @relation("CategoryCreatedBy")
+  categoriesUpdated        EquipmentCategory[] @relation("CategoryUpdatedBy")
+  productsCreated          Product[]           @relation("ProductCreatedBy")
+  productsUpdated          Product[]           @relation("ProductUpdatedBy")
+  enquiriesCreated         EquipmentEnquiry[]  @relation("EnquiryCreatedBy")
+  enquiriesUpdated         EquipmentEnquiry[]  @relation("EnquiryUpdatedBy")
+  servicesCreated          BusinessService[]   @relation("ServiceCreatedBy")
+  servicesUpdated          BusinessService[]   @relation("ServiceUpdatedBy")
+  serviceEnquiriesCreated  ServiceEnquiry[]    @relation("ServiceEnquiryCreatedBy")
+  serviceEnquiriesUpdated  ServiceEnquiry[]    @relation("ServiceEnquiryUpdatedBy")
+  jobsCreated              Job[]               @relation("JobCreatedBy")
+  jobsUpdated              Job[]               @relation("JobUpdatedBy")
+
+  // audit tracking (self‑referencing optional)
+  createdById      String?
+  createdBy        User?       @relation("UserCreatedBy", fields: [createdById], references: [id])
+  updatedById      String?
+  updatedBy        User?       @relation("UserUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([email])
+  @@index([role])
+}
+
+model GymOwner {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName String
+  phone       String
+  city        String?
+  address     String?
+  gstNumber   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  enquiries   EquipmentEnquiry[]
+  jobs        Job[]
+
+  @@index([companyName])
+}
+
+model JobSeeker {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName        String
+  phone           String
+  experience      String?
+  preferredCity   String?
+  preferredSalary String?
+  skills          String[] @default([])
+  resumeUrl       String?
+  certifications  String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  applications    JobApplication[]
+
+  @@index([fullName])
+}
+
+// --------------------------------------------------------
+// 2. COMMERCIAL EQUIPMENT MARKETPLACE MODELS
+// --------------------------------------------------------
+
+model EquipmentCategory {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  image       String?
+  itemCount   Int       @default(0)
+  isPopulated Boolean   @default(true)
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  products Product[]
+
+  // audit tracking
+  createdById String?
+  createdBy   User?    @relation("CategoryCreatedBy", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy   User?    @relation("CategoryUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([slug])
+}
+
+model Product {
+  id               String            @id @default(uuid())
+  name             String
+  slug             String            @unique
+  brand            String
+  categoryId       String
+  category         EquipmentCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  equipmentType    String?
+  applicationTypes String[]          @default(["Commercial Gym"])
+  rating           Float             @default(5.0)
+  reviewCount      Int               @default(0)
+  inStock          Boolean           @default(true)
+  leadTime         String            @default("7-14 Days")
+  minOrderQty      Int               @default(1)
+  badge            String?
+  description      String
+  image            String
+  gallery          String[]          @default([])
+  specs            Json              @default("{}")
+  features         String[]          @default([])
+  deletedAt        DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  images       ProductImage[]
+  enquiryItems EquipmentEnquiryItem[]
+
+  // audit tracking
+  createdById String?
+  createdBy   User?    @relation("ProductCreatedBy", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy   User?    @relation("ProductUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([brand])
+  @@index([categoryId])
+  @@index([slug])
+}
+
+model ProductImage {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  isPrimary Boolean  @default(false)
+  altText   String?
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
+// --------------------------------------------------------
+// 3. EQUIPMENT ENQUIRY & RFQ MODELS
+// --------------------------------------------------------
+
+model EquipmentEnquiry {
+  id             String        @id @default(uuid())
+  rfqReference   String        @unique
+  gymOwnerId     String?
+  gymOwner       GymOwner?     @relation(fields: [gymOwnerId], references: [id], onDelete: SetNull)
+  name           String
+  companyGymName String
+  mobile         String
+  email          String?
+  city           String?
+  timeframe      String?       @default("Immediate")
+  requirements   String?
+  status         EnquiryStatus @default(NEW)
+  deletedAt      DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  items EquipmentEnquiryItem[]
+
+  // audit tracking
+  createdById String?
+  createdBy   User?    @relation("EnquiryCreatedBy", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy   User?    @relation("EnquiryUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([rfqReference])
+  @@index([mobile])
+  @@index([status])
+}
+
+model EquipmentEnquiryItem {
+  id        String           @id @default(uuid())
+  enquiryId String
+  enquiry   EquipmentEnquiry @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  productId String?
+  product   Product?         @relation(fields: [productId], references: [id], onDelete: SetNull)
+  quantity  Int              @default(1)
+  notes     String?
+  createdAt DateTime         @default(now())
+
+  @@index([enquiryId])
+}
+
+// --------------------------------------------------------
+// 4. BUSINESS GROWTH SERVICES MODELS
+// --------------------------------------------------------
+
+model BusinessService {
+  id            String    @id @default(uuid())
+  name          String
+  slug          String    @unique
+  category      String
+  shortDesc     String
+  overview      String
+  whatsIncluded String[]  @default([])
+  deliverables  String[]  @default([])
+  benefits      String[]  @default([])
+  image         String
+  badge         String?
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  enquiries ServiceEnquiry[]
+
+  // audit tracking
+  createdById String?
+  createdBy   User?    @relation("ServiceCreatedBy", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy   User?    @relation("ServiceUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([slug])
+  @@index([category])
+}
+
+model ServiceEnquiry {
+  id                     String          @id @default(uuid())
+  serviceId              String?
+  service                BusinessService? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  name                   String
+  gymName                String
+  serviceRequired        String
+  mobile                 String
+  email                  String?
+  additionalRequirements String?
+  status                 ServiceStatus   @default(NEW)
+  deletedAt              DateTime?
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+
+  // audit tracking
+  createdById String?
+  createdBy   User?    @relation("ServiceEnquiryCreatedBy", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy   User?    @relation("ServiceEnquiryUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([mobile])
+  @@index([status])
+}
+
+// --------------------------------------------------------
+// 5. MANPOWER & HIRING MODELS
+// --------------------------------------------------------
+
+model Job {
+  id                String    @id @default(uuid())
+  title             String
+  slug              String    @unique
+  category          String
+  gymOwnerId        String?
+  gymOwner          GymOwner? @relation(fields: [gymOwnerId], references: [id], onDelete: SetNull)
+  gymName           String
+  location          String
+  salaryRange       String
+  type              JobType   @default(FULL_TIME)
+  experience        String
+  description       String
+  requirements      String[]  @default([])
+  applicationsCount Int       @default(0)
+  isActive          Boolean   @default(true)
+  deletedAt         DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  applications JobApplication[]
+
+  // audit tracking
+  createdById String?
+  createdBy   User?    @relation("JobCreatedBy", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy   User?    @relation("JobUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([slug])
+  @@index([category])
+  @@index([location])
+}
+
+model JobApplication {
+  id              String            @id @default(uuid())
+  jobId           String
+  job             Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobSeekerId     String?
+  jobSeeker       JobSeeker?        @relation(fields: [jobSeekerId], references: [id], onDelete: SetNull)
+  fullName        String
+  mobile          String
+  email           String
+  resumeUrl       String?
+  experience      String?
+  preferredCity   String?
+  preferredSalary String?
+  skills          String[]          @default([])
+  certifications  String?
+  status          ApplicationStatus @default(PENDING_REVIEW)
+  deletedAt       DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([jobId])
+  @@index([mobile])
+  @@index([status])
+}
+
+// --------------------------------------------------------
+// 6. CONTACT, NOTIFICATIONS & PLATFORM SETTINGS
+// --------------------------------------------------------
+
+model ContactEnquiry {
+  id        String    @id @default(uuid())
+  name      String
+  gymName   String?
+  email     String?
+  mobile    String
+  message   String
+  status    String    @default("Unread")
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([mobile])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      NotificationType @default(SYSTEM)
+  priority  NotificationPriority @default(MEDIUM)
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([type])
+}
+
+model Testimonial {
+  id          String   @id @default(uuid())
+  clientName  String
+  designation String
+  gymName     String
+  quote       String
+  rating      Int      @default(5)
+  avatar      String?
+  isFeatured  Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Setting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       Json
+  description String?
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
+}
+
+// --------------------------------------------------------
+// 7. AUTHENTICATION - REFRESH TOKEN
+// --------------------------------------------------------
+
+model RefreshToken {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hashedToken String    @unique
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([hashedToken])
+  @@index([expiresAt])
+}
+
+// --------------------------------------------------------
+// 8. AUDIT LOG
+// --------------------------------------------------------
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  adminId   String
+  admin     User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  action    String
+  entity    String
+  entityId  String
+  createdAt DateTime @default(now())
+
+  @@index([adminId])
+  @@index([entity])
+}
+
+// --------------------------------------------------------
+// 9. REUSABLE MEDIA
+// --------------------------------------------------------
+
+model Media {
+  id        String   @id @default(uuid())
+  url       String
+  publicId  String?
+  mimeType  String
+  size      Int
+  uploadedBy String?
+  uploadedByUser User? @relation(fields: [uploadedBy], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+
+  @@index([uploadedBy])
+}

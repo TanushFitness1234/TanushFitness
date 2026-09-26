@@ -1,0 +1,392 @@
+@import url('https://fonts.cdnfonts.com/css/monument-extended');
+@import "tailwindcss";
+
+:root {
+  /* Strict 5-Color Monochromatic Architectural Palette */
+  --primary-navy: #0F1926;
+  --dark-base: #0C1015;
+  --charcoal: #2A2A2B;
+  --off-white: #E8E8E8;
+  --light-gray: #D0CFCA;
+
+  /* Backward Compatibility Aliases */
+  --navy-bg: #0F1926;
+  --navy-card: #E8E8E8;
+  --navy-heading: #E8E8E8;
+  --navy-muted: #D0CFCA;
+  --navy-card-heading: #0F1926;
+  --navy-card-body: #2A2A2B;
+
+  --charcoal-bg: #0F1926;
+  --charcoal-card: #E8E8E8;
+  --charcoal-heading: #E8E8E8;
+  --charcoal-muted: #D0CFCA;
+  --charcoal-card-heading: #0F1926;
+  --charcoal-card-body: #2A2A2B;
+}
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  ::selection {
+    background-color: #E8E8E8;
+    color: #0F1926;
+  }
+
+  body {
+    background-color: #0F1926;
+    color: #E8E8E8;
+    font-family: 'General Sans', 'Plus Jakarta Sans', 'Montserrat', system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+
+  h1 {
+    font-family: 'Monument Extended', 'Unbounded', 'Syne', 'Clash Display', 'Satoshi', sans-serif;
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    letter-spacing: 0.025em;
+    line-height: 1.3;
+    font-weight: 900;
+  }
+
+  h2 {
+    font-family: 'Monument Extended', 'Unbounded', 'Syne', 'Clash Display', 'Satoshi', sans-serif;
+    font-size: clamp(1.35rem, 2.4vw, 1.875rem);
+    letter-spacing: 0.025em;
+    line-height: 1.35;
+    font-weight: 800;
+  }
+
+  h3 {
+    font-family: 'Monument Extended', 'Unbounded', 'Syne', 'Clash Display', 'Satoshi', sans-serif;
+    font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+    letter-spacing: 0.025em;
+    line-height: 1.4;
+    font-weight: 800;
+  }
+
+  h4, h5, h6 {
+    font-family: 'Monument Extended', 'Unbounded', 'Syne', 'Clash Display', 'Satoshi', sans-serif;
+    letter-spacing: 0.025em;
+    font-weight: 800;
+  }
+
+  .font-satoshi, .font-heading, .font-display {
+    font-family: 'Monument Extended', 'Unbounded', 'Syne', 'Clash Display', 'Satoshi', sans-serif;
+    letter-spacing: 0.025em;
+  }
+
+  .font-montserrat {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 700 !important;
+  }
+
+  .font-mono, code, pre {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+/* Sharp, Lightweight Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0C1015;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2A2A2B;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #D0CFCA;
+}
+
+/* Light Card Custom Scrollbars */
+.light-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #0F1926 #E5E4DE;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+.light-scrollbar::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.light-scrollbar::-webkit-scrollbar-track {
+  background: #E8E7E1;
+  border-radius: 9999px;
+  margin: 3px 0;
+}
+
+.light-scrollbar::-webkit-scrollbar-thumb {
+  background: #0F1926;
+  border-radius: 9999px;
+  border: 1.5px solid #E8E7E1;
+}
+
+.light-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #000000;
+}
+
+.light-scrollbar::-webkit-scrollbar-thumb:active {
+  background: #000000;
+}
+
+/* Hardware-Accelerated Card Hover Transitions */
+.luxury-card,
+.card-lift {
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.luxury-card:hover,
+.card-lift:hover {
+  transform: translateY(-4px) translateZ(0);
+  box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.5), 0 0 20px -4px rgba(232, 232, 232, 0.08);
+}
+
+/* Monochromatic Signature Button Styles (No Orange) */
+.btn-primary,
+.btn-orange,
+.btn-vault {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  font-family: 'General Sans', 'Plus Jakarta Sans', 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background-color: #E8E8E8;
+  color: #0F1926;
+  border: 1px solid #E8E8E8;
+  transform: translateZ(0);
+  transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-primary:hover,
+.btn-orange:hover,
+.btn-vault:hover {
+  background-color: #D0CFCA;
+  color: #0F1926;
+  border-color: #D0CFCA;
+  transform: translateY(-2px) translateZ(0);
+  box-shadow: 0 8px 24px -4px rgba(232, 232, 232, 0.2);
+}
+
+.btn-dark {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  font-family: 'General Sans', 'Plus Jakarta Sans', 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background-color: #0F1926;
+  color: #E8E8E8;
+  border: 1px solid rgba(232, 232, 232, 0.2);
+  transform: translateZ(0);
+  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-dark:hover {
+  background-color: #0C1015;
+  color: #E8E8E8;
+  border-color: #E8E8E8;
+  transform: translateY(-2px) translateZ(0);
+}
+
+.btn-charcoal,
+.btn-steel {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  font-family: 'General Sans', 'Plus Jakarta Sans', 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background-color: #2A2A2B;
+  color: #E8E8E8;
+  border: 1px solid rgba(208, 207, 202, 0.2);
+  transform: translateZ(0);
+  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-charcoal:hover,
+.btn-steel:hover {
+  background-color: #0F1926;
+  border-color: #E8E8E8;
+  color: #E8E8E8;
+  transform: translateY(-2px) translateZ(0);
+}
+
+.btn-outline,
+.btn-vault-outline {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(232, 232, 232, 0.3);
+  font-family: 'General Sans', 'Plus Jakarta Sans', 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background-color: transparent;
+  color: #E8E8E8;
+  transform: translateZ(0);
+  transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-outline:hover,
+.btn-vault-outline:hover {
+  border-color: #E8E8E8;
+  background-color: #E8E8E8;
+  color: #0F1926;
+  transform: translateY(-2px) translateZ(0);
+  box-shadow: 0 8px 20px -4px rgba(232, 232, 232, 0.25);
+}
+
+
+/* GPU-Composited Ultra-Smooth Marquee Keyframes (100% Continuous Seamless Loop) */
+@keyframes marquee-scroll {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+@keyframes marquee-scroll-reverse {
+  0% { transform: translate3d(-50%, 0, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+.animate-marquee-fast {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  animation: marquee-scroll 14s linear infinite !important;
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  animation: marquee-scroll 22s linear infinite !important;
+}
+
+.animate-marquee-slow {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  animation: marquee-scroll 32s linear infinite !important;
+}
+
+.animate-marquee-reverse {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  animation: marquee-scroll-reverse 22s linear infinite !important;
+}
+
+.animate-marquee,
+.animate-marquee-fast,
+.animate-marquee-slow,
+.animate-marquee-reverse {
+  animation-play-state: running !important;
+  animation-iteration-count: infinite !important;
+  animation-timing-function: linear !important;
+  pointer-events: none;
+}
+
+/* Lenis Momentum & Smooth Inertia Scroll */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+/* Custom Sleek Modal Scrollbar */
+.modal-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #2A2A2B #D0CFCA;
+}
+
+.modal-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-scrollbar::-webkit-scrollbar-track {
+  background: rgba(42, 42, 43, 0.08);
+  border-radius: 9999px;
+  margin: 6px 0;
+}
+
+.modal-scrollbar::-webkit-scrollbar-thumb {
+  background: #2A2A2B;
+  border-radius: 9999px;
+  opacity: 0.8;
+}
+
+.modal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #0F1926;
+}
+
+

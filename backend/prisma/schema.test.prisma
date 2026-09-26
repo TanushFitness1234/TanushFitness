@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL_TEST")
+}
+
+// copy of the existing schema (models) omitted for brevity – you can import the main schema via Prisma's `@@import` if supported, otherwise duplicate the models here.
+
+// For illustration, we include only a subset of models needed for tests.
+
+model User {
+  id               String   @id @default(uuid())
+  email            String   @unique
+  password         String
+  role             UserRole @default(GYM_OWNER)
+  status           UserStatus @default(ACTIVE)
+  isVerified       Boolean @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+enum UserRole {
+  ADMIN
+  GYM_OWNER
+  JOB_SEEKER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  DELETED
+}
+
+// Additional models can be added as needed for integration tests.
